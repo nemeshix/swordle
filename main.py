@@ -18,18 +18,26 @@ def table_print(foolist):
 # You even then have the option of specifying the output location, with cmd.Cmd(stdout=my_stream)
 
 
-def word_filter(template, exclude, include):
+def word_filter(template, exclude, include, wrong_position):
     # "^(?!.*[ignore]).*(?=.*[include].*)(?=.*[include]+)(^.u...)$"gm
-    this_regex = ""
+    this_regex = "^"
+    for wrong in wrong_position:
+        # split wrong into two parts
+        # wrong[0] is the letter
+        # wrong[1] is the position
+        # regex exclude strings where letter wrong[0] is in position wrong[1]
+        this_regex += "(?!.{" + str(int(wrong[1])-1) + "}[" + wrong[0] + "]).*"
+
+
     if exclude:
         # all excluded letters
-        this_regex = fr"^(?!.*[{exclude}]).*"
+        this_regex += fr"(?!.*[{exclude}]).*"
     if include:
         # one for each letter must include
         for character in include:
-            this_regex = this_regex + fr"(?=.*[{character}].*)"
-    this_regex = this_regex + fr"(^{template})$"
-    # print(this_regex)
+            this_regex += fr"(?=.*[{character}].*)"
+    this_regex += fr"(^{template})$"
+    print(this_regex)
     pattern = re.compile(this_regex, re.UNICODE)
     rae_list = open(r".\rae_palabras_5letras.txt", encoding="utf-8").read().splitlines()
     # for word in rae_list:
@@ -39,13 +47,16 @@ def word_filter(template, exclude, include):
     newlist = list(filter(pattern.match, rae_list))  # Read Note below
     return newlist
 
+# filter list by regex ignore words with letters in determinate position
+
 
 def solver():
     # Use a breakpoint in the code line below to debug your script.
-    pattern = "....a"
-    exclude = "uoejpst"
-    include = "x"
-    solution = word_filter(pattern, exclude, include)
+    pattern = "..u.."
+    exclude = "cre"
+    include = "l"
+    wrong_position = ["p1", "a1"]
+    solution = word_filter(pattern, exclude, include, wrong_position)
     hint = get_hint(pattern, exclude, include)
     table_print(solution)
     table_print(hint)
